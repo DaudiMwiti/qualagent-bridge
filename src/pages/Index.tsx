@@ -6,7 +6,7 @@ export default function Index() {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Redirect to the new dashboard
+    // Redirect to the landing page
     navigate("/");
   }, [navigate]);
   

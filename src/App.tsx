@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/layout/app-layout";
 
 // Pages
+import LandingPage from "./pages/LandingPage";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
@@ -26,7 +27,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<AppLayout />}>
+          {/* Landing Page Route */}
+          <Route index element={<LandingPage />} />
+          
+          {/* App Routes */}
+          <Route path="/dashboard" element={<AppLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="projects" element={<Projects />} />
             <Route path="projects/new" element={<NewProject />} />
@@ -36,8 +41,10 @@ const App = () => (
             <Route path="agents" element={<Agents />} />
             <Route path="settings" element={<Settings />} />
           </Route>
+          
           {/* OLD ROUTES - Keeping for compatibility */}
           <Route path="/home" element={<Index />} />
+          
           {/* CATCH-ALL ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
