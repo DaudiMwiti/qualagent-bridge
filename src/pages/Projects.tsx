@@ -24,7 +24,7 @@ export default function Projects() {
         title="Projects" 
         description="View and manage your research projects"
         actions={
-          <Button onClick={() => navigate("/projects/new")}>
+          <Button onClick={() => navigate("/dashboard/projects/new")}>
             <PlusCircle className="mr-2 h-4 w-4" />
             New Project
           </Button>
@@ -60,7 +60,7 @@ export default function Projects() {
                   ? "No projects match your search criteria" 
                   : "You haven't created any projects yet"}
               </p>
-              <Button onClick={() => navigate("/projects/new")}>
+              <Button onClick={() => navigate("/dashboard/projects/new")}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Create Your First Project
               </Button>

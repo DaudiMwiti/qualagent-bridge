@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -43,7 +42,7 @@ export default function ProjectDetail() {
       <div className="text-center p-12">
         <h2 className="text-xl font-semibold mb-2">Project not found</h2>
         <p className="text-muted-foreground mb-4">The project you're looking for doesn't exist or has been deleted.</p>
-        <Button onClick={() => navigate("/projects")}>Back to Projects</Button>
+        <Button onClick={() => navigate("/dashboard/projects")}>Back to Projects</Button>
       </div>
     );
   }
@@ -54,13 +53,13 @@ export default function ProjectDetail() {
         title={project.name} 
         description={project.description || "No description provided"}
         breadcrumbs={[
-          { label: "Projects", href: "/projects" },
-          { label: project.name, href: `/projects/${project.id}` },
+          { label: "Projects", href: "/dashboard/projects" },
+          { label: project.name, href: `/dashboard/projects/${project.id}` },
         ]}
         actions={
           <div className="flex space-x-2">
             <Button 
-              onClick={() => navigate(`/projects/${project.id}/analysis/new`)}
+              onClick={() => navigate(`/dashboard/projects/${project.id}/analysis/new`)}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               New Analysis
@@ -111,7 +110,7 @@ export default function ProjectDetail() {
               <p className="text-muted-foreground mb-6">
                 Start your first analysis to gain insights from your research data
               </p>
-              <Button onClick={() => navigate(`/projects/${project.id}/analysis/new`)}>
+              <Button onClick={() => navigate(`/dashboard/projects/${project.id}/analysis/new`)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Start New Analysis
               </Button>
@@ -148,7 +147,7 @@ export default function ProjectDetail() {
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => navigate(`/projects/${project.id}/analysis/${analysis.id}`)}
+                            onClick={() => navigate(`/dashboard/projects/${project.id}/analysis/${analysis.id}`)}
                           >
                             View
                           </Button>
@@ -175,7 +174,7 @@ export default function ProjectDetail() {
               <p className="text-muted-foreground mb-6">
                 Memories are created when you run analyses with memory-enabled agents
               </p>
-              <Button onClick={() => navigate(`/projects/${project.id}/analysis/new`)}>
+              <Button onClick={() => navigate(`/dashboard/projects/${project.id}/analysis/new`)}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Start New Analysis
               </Button>

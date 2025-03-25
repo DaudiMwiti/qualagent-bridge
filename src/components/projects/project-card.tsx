@@ -32,7 +32,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           variant="ghost" 
           className="ml-auto" 
           size="sm"
-          onClick={() => navigate(`/projects/${project.id}`)}
+          onClick={() => navigate(`/dashboard/projects/${project.id}`)}
         >
           View Details
           <ArrowRight className="ml-2 h-4 w-4" />

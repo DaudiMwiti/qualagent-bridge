@@ -37,7 +37,7 @@ export default function NewProject() {
             title: "Project created",
             description: "Your new project has been created successfully",
           });
-          navigate(`/projects/${data.id}`);
+          navigate(`/dashboard/projects/${data.id}`);
         },
         onError: (error) => {
           toast({
@@ -56,8 +56,8 @@ export default function NewProject() {
         title="Create New Project" 
         description="Set up a new qualitative research project"
         breadcrumbs={[
-          { label: "Projects", href: "/projects" },
-          { label: "New Project", href: "/projects/new" },
+          { label: "Projects", href: "/dashboard/projects" },
+          { label: "New Project", href: "/dashboard/projects/new" },
         ]}
       />
       
@@ -89,7 +89,7 @@ export default function NewProject() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate("/projects")}
+              onClick={() => navigate("/dashboard/projects")}
             >
               Cancel
             </Button>
