@@ -100,6 +100,37 @@ class AnalysisOrchestrator:
             }
         }
         
+        # Fetch and summarize relevant memories if available in the context
+        if "context" in input_data and "memories" in input_data["context"]:
+            memories = input_data["context"]["memories"]
+            
+            # Check if we have enough memories to summarize
+            if memories and len(memories) > 1:
+                try:
+                    # Use the summarize_memory tool to generate a concise summary
+                    logger.info(f"Generating memory summary from {len(memories)} memories")
+                    
+                    # Call the summarize_memory tool
+                    summary_result = await summarize_memory.ainvoke({"memories": memories})
+                    
+                    # Add the summary to preprocessed data
+                    if "summary" in summary_result:
+                        memory_summary = summary_result["summary"]
+                        
+                        # Ensure summary isn't too long (approx 400 tokens)
+                        if len(memory_summary.split()) > 100:  # Very rough token estimation
+                            logger.warning("Memory summary too long, truncating")
+                            sentences = memory_summary.split('.')
+                            truncated_summary = '.'.join(sentences[:5]) + '.'  # Take ~5 sentences
+                            memory_summary = truncated_summary
+                            
+                        preprocessed_data["context_summary"] = memory_summary
+                        logger.info("Added memory summary to context")
+                    else:
+                        logger.warning("Failed to generate memory summary")
+                except Exception as e:
+                    logger.error(f"Error summarizing memories: {str(e)}")
+        
         logger.info(f"Preprocessed data with {len(preprocessed_data['text_data'])} text items")
         
         return {
@@ -160,8 +191,20 @@ class AnalysisOrchestrator:
         # Get the research question or objective
         research_objective = parameters.get("research_objective", "Identify key themes and insights")
         
+        # Include memory summary in the prompt if available
+        context_summary = ""
+        if "context_summary" in preprocessed_data:
+            context_summary = f"""
+            CONTEXT FROM PREVIOUS ANALYSES:
+            {preprocessed_data['context_summary']}
+            
+            Consider this context when analyzing the new data. Build upon these insights.
+            """
+        
         user_prompt = f"""
         Research Objective: {research_objective}
+        
+        {context_summary}
         
         Data to analyze:
         {combined_text[:4000]}  # Limit text size for initial analysis
@@ -210,15 +253,15 @@ class AnalysisOrchestrator:
         # Check for explicit tool mentions
         if "document_search" in response_lower or "search" in response_lower:
             return "document_search"
-        elif "generate_insight" in response_lower or "insight" in response_lower:
+        elif "generate_insight" in response_text or "insight" in response_text:
             return "generate_insight"
-        elif "sentiment_analysis" in response_lower or "sentiment" in response_lower:
+        elif "sentiment_analysis" in response_text or "sentiment" in response_text:
             return "sentiment_analysis"
-        elif "theme_cluster" in response_lower or "cluster" in response_lower:
+        elif "theme_cluster" in response_text or "cluster" in response_text:
             return "theme_cluster"
-        elif "router" in response_lower:
+        elif "router" in response_text:
             return "llm_router"
-        elif "summarize_memory" in response_lower:
+        elif "summarize_memory" in response_text:
             return "summarize_memory"
         
         # Default to generate_insight if no clear tool is mentioned

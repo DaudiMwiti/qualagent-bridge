@@ -9,6 +9,7 @@ from src.db.models import Analysis, Project, Agent
 from src.schemas.analysis import AnalysisCreate, AnalysisUpdate
 from src.agents.orchestrator import AnalysisOrchestrator
 from src.utils.vector_store import VectorStore
+from src.agents.tools import summarize_memory
 
 class AnalysisService:
     def __init__(self, db: AsyncSession):
