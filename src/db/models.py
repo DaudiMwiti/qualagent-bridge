@@ -1,3 +1,4 @@
+
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Enum, func, JSON, Float, Index
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
@@ -66,6 +67,11 @@ class AgentMemory(Base):
     metadata = Column(JSONB, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
+    # New columns for memory scoring and tagging
+    tag = Column(String(50), nullable=True)  # Semantic tag (observation, emotion, etc.)
+    score = Column(Float, nullable=True)  # Relevance score based on cosine similarity
+    summary = Column(Text, nullable=True)  # Summary for grouped memories
+    
     # Relationships
     project = relationship("Project")
     agent = relationship("Agent")
@@ -76,4 +82,5 @@ class AgentMemory(Base):
         Index('idx_agent_memories_project', 'project_id'),
         Index('idx_agent_memories_agent', 'agent_id'),
         Index('idx_agent_memories_type', 'memory_type'),
+        Index('idx_agent_memories_tag', 'tag'),  # New index for tag-based filtering
     )

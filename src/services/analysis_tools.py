@@ -1,3 +1,4 @@
+
 from typing import Dict, Any, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
@@ -10,7 +11,8 @@ from src.agents.tools import (
     llm_router,
     retrieve_memories,
     store_memory,
-    get_recent_context
+    get_recent_context,
+    summarize_memories
 )
 
 logger = logging.getLogger(__name__)
@@ -28,7 +30,8 @@ class AnalysisToolsService:
             "llm_router": llm_router,
             "retrieve_memories": retrieve_memories,
             "store_memory": store_memory,
-            "get_recent_context": get_recent_context
+            "get_recent_context": get_recent_context,
+            "summarize_memories": summarize_memories
         }
     
     async def execute_tool(self, tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -80,6 +83,10 @@ class AnalysisToolsService:
                 result = await store_memory.ainvoke({"query": query})
             elif selected_tool == "get_recent_context":
                 result = await get_recent_context.ainvoke({"query": query})
+            elif selected_tool == "summarize_memories":
+                # This would typically need memory IDs, but we can't get those from just a query
+                # For now, we'll return an error for this case
+                result = {"error": "summarize_memories requires specific memory IDs"}
             else:
                 result = {"error": f"Unknown tool: {selected_tool}"}
             

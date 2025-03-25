@@ -8,6 +8,7 @@ from src.services.project_service import ProjectService
 from src.services.agent_service import AgentService
 from src.services.analysis_service import AnalysisService
 from src.services.analysis_tools import AnalysisToolsService
+from src.utils.vector_store import VectorStore
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Dependency for getting async database session"""
@@ -33,3 +34,6 @@ async def get_analysis_tools_service(db: AsyncSession = Depends(get_db)) -> Anal
     """Dependency for getting AnalysisToolsService"""
     return AnalysisToolsService(db)
 
+async def get_vector_store(db: AsyncSession = Depends(get_db)) -> VectorStore:
+    """Dependency for getting VectorStore"""
+    return VectorStore(db)

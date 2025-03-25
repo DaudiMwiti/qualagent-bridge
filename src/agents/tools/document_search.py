@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 @tool(return_direct=False)
-async def document_search(query: str, project_id: int = None, limit: int = 5) -> Dict[str, Any]:
+async def document_search(query: str, project_id: int = None, limit: int = 5, auto_tag: bool = True) -> Dict[str, Any]:
     """
     Search through qualitative documents for relevant information using vector similarity.
     
@@ -20,9 +20,10 @@ async def document_search(query: str, project_id: int = None, limit: int = 5) ->
         query: The search query to find relevant documents.
         project_id: The ID of the project to search within.
         limit: Maximum number of results to return.
+        auto_tag: Whether to automatically tag the results.
         
     Returns:
-        A list of relevant document chunks with similarity scores.
+        A list of relevant document chunks with similarity scores and semantic tags.
     """
     logger.info(f"Performing document search with query: {query}")
     
@@ -47,7 +48,8 @@ async def document_search(query: str, project_id: int = None, limit: int = 5) ->
                             "id": "mock_id",
                             "text": "This is a mock result. Please provide a project_id for actual vector search.",
                             "metadata": {"source": "mock", "warning": "No project_id provided"},
-                            "score": 0.0
+                            "score": 0.0,
+                            "tag": "other"
                         }
                     ],
                     "warning": "No project_id provided. Using mock data."
@@ -61,6 +63,11 @@ async def document_search(query: str, project_id: int = None, limit: int = 5) ->
                 table_name="vectors"  # This is our documents table
             )
             
+            # Add tags to results if requested
+            if auto_tag and results:
+                for doc in results:
+                    doc["tag"] = await vector_store.tag_memory(doc["text"])
+            
             logger.info(f"Document search returned {len(results)} results")
             return {"documents": results}
         
@@ -70,4 +77,3 @@ async def document_search(query: str, project_id: int = None, limit: int = 5) ->
             "documents": [],
             "error": str(e)
         }
-

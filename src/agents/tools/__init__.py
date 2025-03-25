@@ -4,7 +4,7 @@ from src.agents.tools.generate_insight import generate_insight
 from src.agents.tools.sentiment_analysis import sentiment_analysis
 from src.agents.tools.theme_cluster import theme_cluster
 from src.agents.tools.llm_router import llm_router
-from src.agents.tools.agent_memory import retrieve_memories, store_memory, get_recent_context
+from src.agents.tools.agent_memory import retrieve_memories, store_memory, get_recent_context, summarize_memories
 
 __all__ = [
     "document_search",
@@ -15,4 +15,5 @@ __all__ = [
     "retrieve_memories",
     "store_memory",
     "get_recent_context",
+    "summarize_memories",
 ]
