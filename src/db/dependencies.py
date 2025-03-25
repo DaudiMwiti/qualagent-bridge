@@ -1,6 +1,6 @@
 
 from typing import AsyncGenerator
-
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.base import async_session
@@ -32,3 +32,4 @@ async def get_analysis_service(db: AsyncSession = Depends(get_db)) -> AnalysisSe
 async def get_analysis_tools_service(db: AsyncSession = Depends(get_db)) -> AnalysisToolsService:
     """Dependency for getting AnalysisToolsService"""
     return AnalysisToolsService(db)
+
