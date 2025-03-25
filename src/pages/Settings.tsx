@@ -2,12 +2,10 @@
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart } from "lucide-react";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -31,16 +29,6 @@ export default function Settings() {
     }
   };
   
-  const saveOpenAIKey = (key: string) => {
-    // In a real app, you would save this to a secure storage
-    localStorage.setItem("openai_api_key", key);
-    
-    toast({
-      title: "API Key Saved",
-      description: "Your OpenAI API key has been saved successfully",
-    });
-  };
-  
   return (
     <div>
       <PageHeader 
@@ -49,40 +37,6 @@ export default function Settings() {
       />
       
       <div className="grid gap-6 max-w-2xl">
-        <Card>
-          <CardHeader>
-            <CardTitle>OpenAI Configuration</CardTitle>
-            <CardDescription>
-              Configure your OpenAI API key for qualitative analysis
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="apiKey">OpenAI API Key</Label>
-              <div className="flex space-x-2">
-                <Input
-                  id="apiKey"
-                  type="password"
-                  placeholder="sk-..."
-                  onChange={(e) => {
-                    // Store value temporarily but don't set in state for security
-                    e.target.dataset.value = e.target.value;
-                  }}
-                />
-                <Button onClick={() => {
-                  const input = document.getElementById('apiKey') as HTMLInputElement;
-                  const key = input?.dataset.value || '';
-                  saveOpenAIKey(key);
-                  input.value = '';
-                }}>Save</Button>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Your API key is stored locally and not sent to our servers
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-        
         <Card>
           <CardHeader>
             <CardTitle>Appearance</CardTitle>
