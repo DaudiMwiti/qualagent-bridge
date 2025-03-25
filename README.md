@@ -1,69 +1,133 @@
-# Welcome to your Lovable project
 
-## Project info
+# QualAgents - AI-Powered Qualitative Research Platform
 
-**URL**: https://lovable.dev/projects/f80b0ce3-e8e1-4ec3-82bc-201a90a1d3e6
+QualAgents is a backend service for AI-powered qualitative data analysis, built with FastAPI, LangGraph, and PostgreSQL with pgvector.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- LangGraph-powered agent orchestration for processing qualitative data
+- AI agents with persistent memory using PostgreSQL + pgvector
+- RESTful APIs for submitting analysis tasks, managing agents, and retrieving insights
+- Project management system for organizing analysis sessions
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f80b0ce3-e8e1-4ec3-82bc-201a90a1d3e6) and start prompting.
+- Python 3.11+
+- FastAPI
+- LangGraph (+ LangChain)
+- PostgreSQL with pgvector
+- Async SQLAlchemy
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Python 3.11 or higher
+- Docker and Docker Compose (optional, for containerized setup)
+- PostgreSQL with pgvector extension (if running locally)
+- OpenAI API key
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Installation
 
-Follow these steps:
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/qualagents.git
+   cd qualagents
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+2. Set up environment variables:
+   ```
+   cp .env.example .env
+   ```
+   Edit `.env` to add your OpenAI API key and customize other settings.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+3. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+   
+   Or if you prefer using Poetry:
+   ```
+   poetry install
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Running with Docker
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+The easiest way to get started is using Docker Compose:
+
+```
+docker-compose up -d
 ```
 
-**Edit a file directly in GitHub**
+This will start:
+- The FastAPI application on port 8000
+- PostgreSQL with pgvector on port 5432
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Running Locally
 
-**Use GitHub Codespaces**
+1. Set up a PostgreSQL database with pgvector extension
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+2. Initialize the database:
+   ```
+   python -m src.db.init_db
+   ```
 
-## What technologies are used for this project?
+3. Start the application:
+   ```
+   uvicorn src.app:app --reload
+   ```
 
-This project is built with .
+4. Access the API documentation at http://localhost:8000/docs
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## API Endpoints
 
-## How can I deploy this project?
+The API provides the following main endpoints:
 
-Simply open [Lovable](https://lovable.dev/projects/f80b0ce3-e8e1-4ec3-82bc-201a90a1d3e6) and click on Share -> Publish.
+- `/api/v1/projects` - Manage analysis projects
+- `/api/v1/agents` - Create and customize AI agents
+- `/api/v1/analysis` - Submit and retrieve analysis tasks
 
-## I want to use a custom domain - is that possible?
+Detailed API documentation is available via the Swagger UI at `/docs`.
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Development
+
+### Project Structure
+
+```
+qualagents/
+├── src/
+│   ├── api/
+│   │   └── api_v1/
+│   │       ├── endpoints/
+│   │       └── api.py
+│   ├── agents/
+│   │   └── orchestrator.py
+│   ├── core/
+│   │   └── config.py
+│   ├── db/
+│   │   ├── base.py
+│   │   ├── models.py
+│   │   └── init_db.py
+│   ├── schemas/
+│   │   ├── project.py
+│   │   ├── agent.py
+│   │   └── analysis.py
+│   ├── services/
+│   │   ├── project_service.py
+│   │   ├── agent_service.py
+│   │   └── analysis_service.py
+│   ├── utils/
+│   │   └── vector_store.py
+│   └── app.py
+├── tests/
+├── .env.example
+├── docker-compose.yml
+├── Dockerfile
+├── pyproject.toml
+├── requirements.txt
+└── README.md
+```
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
