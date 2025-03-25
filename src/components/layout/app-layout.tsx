@@ -1,6 +1,7 @@
 
 import { Outlet, Link } from "react-router-dom";
 import { SidebarNav } from "./sidebar-nav";
+import { NotificationsPopover } from "./notifications";
 
 export function AppLayout() {
   return (
@@ -20,6 +21,15 @@ export function AppLayout() {
       
       {/* Main content */}
       <div className="flex-1 overflow-auto">
+        <div className="border-b p-4 flex justify-between items-center">
+          <div>
+            {/* Mobile menu trigger would go here */}
+          </div>
+          <div className="flex items-center gap-2">
+            <NotificationsPopover />
+            {/* User profile menu would go here */}
+          </div>
+        </div>
         <div className="mx-auto max-w-6xl p-6">
           <Outlet />
         </div>

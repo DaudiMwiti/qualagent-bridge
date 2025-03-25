@@ -1,65 +1,46 @@
+
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/layout/app-layout";
-import { useEffect } from "react";
-import { initializeTheme } from "@/utils/theme";
+import Dashboard from "@/pages/Dashboard";
+import Projects from "@/pages/Projects";
+import ProjectDetail from "@/pages/ProjectDetail";
+import NewProject from "@/pages/NewProject";
+import Agents from "@/pages/Agents";
+import Settings from "@/pages/Settings";
+import NotFound from "@/pages/NotFound";
+import NewAnalysis from "@/pages/NewAnalysis";
+import AnalysisDetail from "@/pages/AnalysisDetail";
+import LandingPage from "@/pages/LandingPage";
+import Help from "@/pages/Help";
+import DataManagement from "@/pages/DataManagement";
+import Visualizations from "@/pages/Visualizations";
 
-// Pages
-import LandingPage from "./pages/LandingPage";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Dashboard from "./pages/Dashboard";
-import Projects from "./pages/Projects";
-import NewProject from "./pages/NewProject";
-import ProjectDetail from "./pages/ProjectDetail";
-import NewAnalysis from "./pages/NewAnalysis";
-import AnalysisDetail from "./pages/AnalysisDetail";
-import Agents from "./pages/Agents";
-import Settings from "./pages/Settings";
-
-const queryClient = new QueryClient();
-
-const App = () => {
-  // Initialize theme when the app loads
-  useEffect(() => {
-    initializeTheme();
-  }, []);
-
+function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Landing Page Route */}
-            <Route index element={<LandingPage />} />
-            
-            {/* App Routes */}
-            <Route path="/dashboard" element={<AppLayout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="projects" element={<Projects />} />
-              <Route path="projects/new" element={<NewProject />} />
-              <Route path="projects/:projectId" element={<ProjectDetail />} />
-              <Route path="projects/:projectId/analysis/new" element={<NewAnalysis />} />
-              <Route path="projects/:projectId/analysis/:analysisId" element={<AnalysisDetail />} />
-              <Route path="agents" element={<Agents />} />
-              <Route path="settings" element={<Settings />} />
-            </Route>
-            
-            {/* OLD ROUTES - Keeping for compatibility */}
-            <Route path="/home" element={<Index />} />
-            
-            {/* CATCH-ALL ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        
+        <Route path="/dashboard" element={<AppLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="projects" element={<Projects />} />
+          <Route path="projects/new" element={<NewProject />} />
+          <Route path="projects/:projectId" element={<ProjectDetail />} />
+          <Route path="projects/:projectId/analysis/new" element={<NewAnalysis />} />
+          <Route path="projects/:projectId/analysis/:analysisId" element={<AnalysisDetail />} />
+          <Route path="agents" element={<Agents />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="help" element={<Help />} />
+          <Route path="data" element={<DataManagement />} />
+          <Route path="visualizations" element={<Visualizations />} />
+        </Route>
+        
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <Toaster />
+    </>
   );
-};
+}
 
 export default App;

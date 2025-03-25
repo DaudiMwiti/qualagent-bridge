@@ -16,6 +16,9 @@ export default function Settings() {
     return false;
   });
   
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
@@ -27,6 +30,13 @@ export default function Settings() {
       document.documentElement.classList.remove("dark");
       localStorage.setItem("theme", "light");
     }
+  };
+  
+  const saveNotificationSettings = () => {
+    toast({
+      title: "Settings Saved",
+      description: "Your notification preferences have been updated.",
+    });
   };
   
   return (
@@ -56,6 +66,50 @@ export default function Settings() {
                 id="darkMode" 
                 checked={darkMode}
                 onCheckedChange={toggleDarkMode}
+              />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Notifications</CardTitle>
+            <CardDescription>
+              Manage how you receive notifications
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="notificationsEnabled">In-App Notifications</Label>
+                <p className="text-sm text-muted-foreground">
+                  Receive notifications within the application
+                </p>
+              </div>
+              <Switch 
+                id="notificationsEnabled" 
+                checked={notificationsEnabled}
+                onCheckedChange={(checked) => {
+                  setNotificationsEnabled(checked);
+                  saveNotificationSettings();
+                }}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="emailNotifications">Email Notifications</Label>
+                <p className="text-sm text-muted-foreground">
+                  Receive email alerts for completed analyses
+                </p>
+              </div>
+              <Switch 
+                id="emailNotifications" 
+                checked={emailNotifications}
+                onCheckedChange={(checked) => {
+                  setEmailNotifications(checked);
+                  saveNotificationSettings();
+                }}
               />
             </div>
           </CardContent>
