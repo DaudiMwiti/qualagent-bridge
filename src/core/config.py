@@ -1,7 +1,7 @@
 
 import os
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Dict, Any, Optional
 
 class Settings(BaseSettings):
     # API configuration
@@ -50,6 +50,22 @@ class Settings(BaseSettings):
     # LLM configuration
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     DEFAULT_MODEL: str = os.getenv("DEFAULT_MODEL", "gpt-4o")
+    
+    # Hybrid AI architecture settings
+    HF_API_KEY: str = os.getenv("HF_API_KEY", "")
+    REPLICATE_API_TOKEN: str = os.getenv("REPLICATE_API_TOKEN", "")
+    COHERE_API_KEY: str = os.getenv("COHERE_API_KEY", "")
+    SYMBL_API_KEY: str = os.getenv("SYMBL_API_KEY", "")
+    
+    # Feature flags for hybrid architecture
+    USE_OPENSOURCE_EMBED: bool = os.getenv("USE_OPENSOURCE_EMBED", "1") == "1"
+    SENTIMENT_PROVIDER: str = os.getenv("SENTIMENT_PROVIDER", "hybrid")  # "openai", "symbl", "huggingface", "hybrid"
+    PARAM_EXTRACTION_PROVIDER: str = os.getenv("PARAM_EXTRACTION_PROVIDER", "openai")  # "openai", "mixtral"
+    
+    # Model settings
+    HF_EMBEDDING_MODEL: str = os.getenv("HF_EMBEDDING_MODEL", "BAAI/bge-small-en")
+    HF_SENTIMENT_MODEL: str = os.getenv("HF_SENTIMENT_MODEL", "distilbert-base-uncased-emotion")
+    REPLICATE_PARAM_MODEL: str = os.getenv("REPLICATE_PARAM_MODEL", "mistralai/mixtral-8x7b-instruct-v0.1")
     
     class Config:
         env_file = ".env"

@@ -16,6 +16,15 @@ services:
       - DB_MAX_OVERFLOW=20
       - SEARCH_CACHE_TTL=3600  # 1 hour cache
       - ENABLE_CACHE=1
+      # Hybrid AI Architecture
+      - HF_API_KEY=${HF_API_KEY}
+      - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN}
+      - COHERE_API_KEY=${COHERE_API_KEY}
+      - SYMBL_API_KEY=${SYMBL_API_KEY}
+      # Feature Flags
+      - USE_OPENSOURCE_EMBED=${USE_OPENSOURCE_EMBED:-1}
+      - SENTIMENT_PROVIDER=${SENTIMENT_PROVIDER:-hybrid}
+      - PARAM_EXTRACTION_PROVIDER=${PARAM_EXTRACTION_PROVIDER:-openai}
     depends_on:
       db:
         condition: service_healthy
