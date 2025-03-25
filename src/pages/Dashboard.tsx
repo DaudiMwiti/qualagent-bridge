@@ -20,6 +20,16 @@ export default function Dashboard() {
     async function fetchRecentAnalyses() {
       try {
         setIsLoadingAnalyses(true);
+        // Add a check to prevent API calls in development if the backend is not available
+        if (import.meta.env.DEV) {
+          // In development, set empty analyses after a delay to simulate loading
+          setTimeout(() => {
+            setRecentAnalyses([]);
+            setIsLoadingAnalyses(false);
+          }, 1000);
+          return;
+        }
+        
         const response = await fetch("/api/v1/analysis?limit=5");
         if (response.ok) {
           const data = await response.json();
@@ -41,7 +51,7 @@ export default function Dashboard() {
         title="Dashboard" 
         description="Overview of your qualitative research projects"
         actions={
-          <Button onClick={() => navigate("/projects/new")}>
+          <Button onClick={() => navigate("/dashboard/projects/new")}>
             <PlusCircle className="mr-2 h-4 w-4" />
             New Project
           </Button>
@@ -73,7 +83,7 @@ export default function Dashboard() {
                     variant="ghost" 
                     className="ml-auto" 
                     size="sm"
-                    onClick={() => navigate(`/projects/${project.id}`)}
+                    onClick={() => navigate(`/dashboard/projects/${project.id}`)}
                   >
                     View Details
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -89,7 +99,7 @@ export default function Dashboard() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Start a new research initiative
                 </p>
-                <Button onClick={() => navigate("/projects/new")}>New Project</Button>
+                <Button onClick={() => navigate("/dashboard/projects/new")}>New Project</Button>
               </CardContent>
             </Card>
           </>
@@ -141,7 +151,7 @@ export default function Dashboard() {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => navigate(`/projects/${analysis.project_id}/analysis/${analysis.id}`)}
+                          onClick={() => navigate(`/dashboard/projects/${analysis.project_id}/analysis/${analysis.id}`)}
                         >
                           View
                         </Button>
@@ -157,7 +167,7 @@ export default function Dashboard() {
         <div className="flex justify-center p-4 bg-muted/20">
           <Button
             variant="ghost"
-            onClick={() => navigate("/projects")}
+            onClick={() => navigate("/dashboard/projects")}
           >
             View All Projects
             <ArrowRight className="ml-2 h-4 w-4" />

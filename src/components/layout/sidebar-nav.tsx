@@ -6,22 +6,22 @@ import { BarChart, FileText, Home, Settings, UserCircle } from "lucide-react";
 const navItems = [
   {
     title: "Dashboard",
-    href: "/",
+    href: "/dashboard",
     icon: Home,
   },
   {
     title: "Projects",
-    href: "/projects",
+    href: "/dashboard/projects",
     icon: FileText,
   },
   {
     title: "Agents",
-    href: "/agents",
+    href: "/dashboard/agents",
     icon: UserCircle,
   },
   {
     title: "Settings",
-    href: "/settings",
+    href: "/dashboard/settings",
     icon: Settings,
   },
 ];
@@ -33,7 +33,7 @@ export function SidebarNav() {
     <nav className="space-y-1">
       {navItems.map((item) => {
         const isActive = location.pathname === item.href ||
-          (item.href !== '/' && location.pathname.startsWith(item.href));
+          (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
           
         return (
           <Link
