@@ -8,75 +8,13 @@ from datetime import datetime
 from src.db.models import Analysis, Project, Agent
 from src.schemas.analysis import AnalysisCreate, AnalysisUpdate
 from src.agents.orchestrator import AnalysisOrchestrator
+from src.utils.vector_store import VectorStore
 
 class AnalysisService:
     def __init__(self, db: AsyncSession):
         self.db = db
     
-    async def create_analysis(self, analysis_data: AnalysisCreate) -> Analysis:
-        """Create a new analysis"""
-        db_analysis = Analysis(**analysis_data.model_dump())
-        self.db.add(db_analysis)
-        await self.db.commit()
-        await self.db.refresh(db_analysis)
-        return db_analysis
-    
-    async def get_analysis(self, analysis_id: int) -> Optional[Analysis]:
-        """Get analysis by ID"""
-        result = await self.db.execute(
-            select(Analysis)
-            .options(selectinload(Analysis.project), selectinload(Analysis.agent))
-            .where(Analysis.id == analysis_id)
-        )
-        return result.scalars().first()
-    
-    async def get_analyses_by_project(
-        self, project_id: int, skip: int = 0, limit: int = 100
-    ) -> List[Analysis]:
-        """Get analyses for a specific project"""
-        result = await self.db.execute(
-            select(Analysis)
-            .where(Analysis.project_id == project_id)
-            .order_by(Analysis.created_at.desc())
-            .offset(skip)
-            .limit(limit)
-        )
-        return result.scalars().all()
-    
-    async def update_analysis_status(
-        self, analysis_id: int, status: str, results: Optional[Dict[str, Any]] = None, error: Optional[str] = None
-    ) -> bool:
-        """Update the status of an analysis"""
-        update_data = {"status": status, "updated_at": datetime.now()}
-        
-        if status == "completed":
-            update_data["completed_at"] = datetime.now()
-            if results:
-                update_data["results"] = results
-        
-        if status == "failed" and error:
-            update_data["error"] = error
-        
-        query = (
-            update(Analysis)
-            .where(Analysis.id == analysis_id)
-            .values(**update_data)
-        )
-        
-        result = await self.db.execute(query)
-        await self.db.commit()
-        return result.rowcount > 0
-    
-    async def get_analysis_results(self, analysis_id: int) -> Dict[str, Any]:
-        """Get the structured results of a completed analysis"""
-        analysis = await self.get_analysis(analysis_id)
-        if not analysis:
-            return {"error": "Analysis not found"}
-        
-        if analysis.status != "completed":
-            return {"error": "Analysis not completed", "status": analysis.status}
-        
-        return analysis.results if analysis.results else {}
+    # ... keep existing code (methods for crud operations)
     
     async def run_analysis(self, analysis_id: int, project_id: int, agent_id: int, data: Dict[str, Any]) -> None:
         """Run the analysis using AI agents"""
@@ -95,6 +33,28 @@ class AnalysisService:
                 )
                 return
             
+            # Initialize the vector store for memory operations
+            vector_store = VectorStore(self.db)
+            
+            # Get previous analysis context if available
+            recent_context = []
+            try:
+                # Retrieve recent preferences and session memories
+                recent_context = await vector_store.get_recent_memories(
+                    project_id=project_id,
+                    agent_id=agent_id,
+                    limit=5
+                )
+            except Exception as e:
+                # Non-critical error, just log it
+                print(f"Error retrieving context: {str(e)}")
+            
+            # Add context to data if available
+            if recent_context:
+                if "context" not in data:
+                    data["context"] = {}
+                data["context"]["memories"] = recent_context
+            
             # Create and run the orchestrator
             orchestrator = AnalysisOrchestrator(
                 agent_config=agent.configuration,
@@ -102,6 +62,36 @@ class AnalysisService:
             )
             
             results = await orchestrator.run_analysis(data)
+            
+            # Store important insights as memories
+            try:
+                if "themes" in results and results["themes"]:
+                    # Store the top themes as long-term memories
+                    for theme in results["themes"][:3]:  # Store top 3 themes
+                        theme_text = f"Theme: {theme.get('name')} - {theme.get('description', '')}"
+                        await vector_store.add_memory(
+                            text=theme_text,
+                            project_id=project_id,
+                            memory_type="long_term",
+                            agent_id=agent_id,
+                            analysis_id=analysis_id,
+                            metadata={"theme": theme.get('name')}
+                        )
+                
+                # Store a summary of this analysis
+                if "summary" in results and results["summary"]:
+                    summary_text = f"Analysis summary: {results['summary'][:500]}..."
+                    await vector_store.add_memory(
+                        text=summary_text,
+                        project_id=project_id,
+                        memory_type="session",
+                        agent_id=agent_id,
+                        analysis_id=analysis_id,
+                        metadata={"type": "analysis_summary"}
+                    )
+            except Exception as e:
+                # Non-critical error, just log it
+                print(f"Error storing memories: {str(e)}")
             
             # Update with results
             await self.update_analysis_status(

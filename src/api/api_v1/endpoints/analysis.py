@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 from typing import List, Dict, Any, Optional
 from sse_starlette.sse import EventSourceResponse
@@ -207,3 +206,65 @@ async def list_available_tools(
     """List all available analysis tools with descriptions"""
     tools_service = AnalysisToolsService(db)
     return {"tools": tools_service.get_available_tools()}
+
+@router.post("/memory")
+async def store_agent_memory(
+    memory_data: Dict[str, Any],
+    db: AsyncSession = Depends(get_db)
+):
+    """Store a new memory for an agent"""
+    logger.info(f"Storing agent memory")
+    tools_service = AnalysisToolsService(db)
+    
+    result = await tools_service.execute_tool("store_memory", memory_data)
+    return result
+
+@router.get("/memory")
+async def retrieve_agent_memories(
+    query: str,
+    project_id: int,
+    memory_type: Optional[str] = None,
+    agent_id: Optional[int] = None,
+    analysis_id: Optional[int] = None,
+    k: int = 5,
+    db: AsyncSession = Depends(get_db)
+):
+    """Retrieve relevant memories based on query"""
+    logger.info(f"Retrieving agent memories for query: {query}")
+    tools_service = AnalysisToolsService(db)
+    
+    params = {
+        "query": query,
+        "project_id": project_id,
+        "memory_type": memory_type,
+        "agent_id": agent_id,
+        "analysis_id": analysis_id,
+        "k": k
+    }
+    
+    result = await tools_service.execute_tool("retrieve_memories", params)
+    return result
+
+@router.get("/memory/recent")
+async def get_recent_memories(
+    project_id: int,
+    memory_type: Optional[str] = None,
+    agent_id: Optional[int] = None,
+    analysis_id: Optional[int] = None,
+    limit: int = 5,
+    db: AsyncSession = Depends(get_db)
+):
+    """Get recent memories for context"""
+    logger.info(f"Getting recent memories for project: {project_id}")
+    tools_service = AnalysisToolsService(db)
+    
+    params = {
+        "project_id": project_id,
+        "memory_type": memory_type,
+        "agent_id": agent_id,
+        "analysis_id": analysis_id,
+        "limit": limit
+    }
+    
+    result = await tools_service.execute_tool("get_recent_context", params)
+    return result

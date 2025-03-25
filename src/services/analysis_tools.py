@@ -1,4 +1,3 @@
-
 from typing import Dict, Any, List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
@@ -8,7 +7,10 @@ from src.agents.tools import (
     generate_insight,
     sentiment_analysis,
     theme_cluster,
-    llm_router
+    llm_router,
+    retrieve_memories,
+    store_memory,
+    get_recent_context
 )
 
 logger = logging.getLogger(__name__)
@@ -23,7 +25,10 @@ class AnalysisToolsService:
             "generate_insight": generate_insight,
             "sentiment_analysis": sentiment_analysis,
             "theme_cluster": theme_cluster,
-            "llm_router": llm_router
+            "llm_router": llm_router,
+            "retrieve_memories": retrieve_memories,
+            "store_memory": store_memory,
+            "get_recent_context": get_recent_context
         }
     
     async def execute_tool(self, tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
@@ -69,6 +74,12 @@ class AnalysisToolsService:
                 import re
                 excerpts = [s.strip() for s in re.split(r'[.!?]', query) if s.strip()]
                 result = await theme_cluster.ainvoke({"excerpts": excerpts})
+            elif selected_tool == "retrieve_memories":
+                result = await retrieve_memories.ainvoke({"query": query})
+            elif selected_tool == "store_memory":
+                result = await store_memory.ainvoke({"query": query})
+            elif selected_tool == "get_recent_context":
+                result = await get_recent_context.ainvoke({"query": query})
             else:
                 result = {"error": f"Unknown tool: {selected_tool}"}
             
