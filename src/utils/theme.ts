@@ -1,6 +1,9 @@
 
 // Simple utility to handle dark mode theme toggle
 
+// Enforce the theme type
+type ThemeType = "dark" | "light";
+
 // Function to initialize theme based on user preference or localStorage
 export function initializeTheme() {
   // Check if theme is stored in localStorage
@@ -13,12 +16,17 @@ export function initializeTheme() {
     return;
   }
   
-  // Apply stored theme
-  setTheme(storedTheme);
+  // Apply stored theme - validate that it's one of our acceptable values
+  if (storedTheme === "dark" || storedTheme === "light") {
+    setTheme(storedTheme);
+  } else {
+    // Fall back to light theme if value is invalid
+    setTheme("light");
+  }
 }
 
 // Function to set the theme
-export function setTheme(theme: "dark" | "light") {
+export function setTheme(theme: ThemeType) {
   if (theme === "dark") {
     document.documentElement.classList.add("dark");
   } else {

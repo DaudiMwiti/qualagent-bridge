@@ -27,13 +27,17 @@ export function AnalysisStream({ analysisId, onComplete }: AnalysisStreamProps) 
     };
     
     eventSource.addEventListener("status", (event) => {
-      const data = JSON.parse(event.data);
+      // Cast event to MessageEvent which has the data property
+      const messageEvent = event as MessageEvent;
+      const data = JSON.parse(messageEvent.data);
       setStatus(data.status);
       setLogs(prev => [...prev, `Status updated: ${data.status}`]);
     });
     
     eventSource.addEventListener("result", (event) => {
-      const data = JSON.parse(event.data);
+      // Cast event to MessageEvent which has the data property
+      const messageEvent = event as MessageEvent;
+      const data = JSON.parse(messageEvent.data);
       setResults(data);
       setLogs(prev => [...prev, "Received analysis results"]);
       
@@ -43,7 +47,9 @@ export function AnalysisStream({ analysisId, onComplete }: AnalysisStreamProps) 
     });
     
     eventSource.addEventListener("error", (event) => {
-      const data = JSON.parse(event.data || '{"error": "Unknown error"}');
+      // Cast event to MessageEvent which has the data property
+      const messageEvent = event as MessageEvent;
+      const data = JSON.parse(messageEvent.data || '{"error": "Unknown error"}');
       setError(data.error);
       setLogs(prev => [...prev, `Error: ${data.error}`]);
       eventSource.close();
