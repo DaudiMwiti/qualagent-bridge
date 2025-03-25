@@ -10,13 +10,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useProject } from "@/api/projects";
 import { useAgents } from "@/api/agents";
 import { useCreateAnalysis } from "@/api/analysis";
+import { AgentPresetSelector } from "@/components/agents/agent-preset-selector";
+import { useAgentPresets } from "@/api/agent-presets";
+import { AgentPreset } from "@/types/agent-presets";
+import { AlertCircle } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 
 export default function NewAnalysis() {
   const { projectId } = useParams();
@@ -25,21 +27,27 @@ export default function NewAnalysis() {
   
   const projectIdNum = projectId ? parseInt(projectId) : 0;
   const { data: project } = useProject(projectIdNum);
-  const { data: agents, isLoading: isLoadingAgents } = useAgents();
   
-  const [agentId, setAgentId] = useState<string>("");
+  // Agent presets integration
+  const { data: presets, isLoading: isLoadingPresets, isError: isPresetsError } = useAgentPresets();
+  const [selectedPreset, setSelectedPreset] = useState<AgentPreset | null>(null);
+  
   const [researchText, setResearchText] = useState("");
   const [objective, setObjective] = useState("Identify key themes and insights");
   
   const { mutate: createAnalysis, isPending } = useCreateAnalysis();
   
+  const handlePresetSelect = (preset: AgentPreset) => {
+    setSelectedPreset(preset);
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!agentId) {
+    if (!selectedPreset) {
       toast({
         title: "Agent selection required",
-        description: "Please select an agent to perform the analysis",
+        description: "Please select an agent preset to perform the analysis",
         variant: "destructive",
       });
       return;
@@ -56,12 +64,15 @@ export default function NewAnalysis() {
     
     const analysisData = {
       project_id: projectIdNum,
-      agent_id: parseInt(agentId),
+      agent_id: parseInt(selectedPreset.id),
       data: {
         text_data: researchText,
         parameters: {
           research_objective: objective,
-          include_quotes: true
+          include_quotes: true,
+          model: selectedPreset.model,
+          temperature: selectedPreset.temperature,
+          tools: selectedPreset.tools
         }
       }
     };
@@ -108,32 +119,31 @@ export default function NewAnalysis() {
       
       <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
         <div className="space-y-2">
-          <Label htmlFor="agent">Select Agent</Label>
-          <Select
-            value={agentId}
-            onValueChange={setAgentId}
-          >
-            <SelectTrigger id="agent" className="w-full">
-              <SelectValue placeholder="Select an agent" />
-            </SelectTrigger>
-            <SelectContent>
-              {isLoadingAgents ? (
-                <SelectItem value="loading" disabled>
-                  Loading agents...
-                </SelectItem>
-              ) : agents?.length === 0 ? (
-                <SelectItem value="none" disabled>
-                  No agents available
-                </SelectItem>
-              ) : (
-                agents?.map((agent) => (
-                  <SelectItem key={agent.id} value={agent.id.toString()}>
-                    {agent.name}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
+          <Label htmlFor="agentPreset">Select Analysis Agent</Label>
+          
+          {isPresetsError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                Failed to load agent presets. Please refresh the page or try again later.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <AgentPresetSelector
+            presets={presets || []}
+            selectedPresetId={selectedPreset?.id || null}
+            onSelectPreset={handlePresetSelect}
+            isLoading={isLoadingPresets}
+          />
+          
+          {selectedPreset && (
+            <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <h3 className="font-medium">Selected: {selectedPreset.name}</h3>
+              <p className="text-sm text-muted-foreground">{selectedPreset.description}</p>
+            </div>
+          )}
         </div>
         
         <div className="space-y-2">
@@ -166,7 +176,7 @@ export default function NewAnalysis() {
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={isPending || !selectedPreset}>
             {isPending ? "Starting Analysis..." : "Start Analysis"}
           </Button>
         </div>
