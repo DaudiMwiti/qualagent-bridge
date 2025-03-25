@@ -7,10 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart } from "lucide-react";
 
 export default function Settings() {
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState("");
   const [darkMode, setDarkMode] = useState(() => {
     if (typeof window !== "undefined") {
       return document.documentElement.classList.contains("dark");
@@ -31,13 +31,13 @@ export default function Settings() {
     }
   };
   
-  const saveApiKey = () => {
+  const saveOpenAIKey = (key: string) => {
     // In a real app, you would save this to a secure storage
-    localStorage.setItem("api_key", apiKey);
+    localStorage.setItem("openai_api_key", key);
     
     toast({
       title: "API Key Saved",
-      description: "Your API key has been saved successfully",
+      description: "Your OpenAI API key has been saved successfully",
     });
   };
   
@@ -51,9 +51,9 @@ export default function Settings() {
       <div className="grid gap-6 max-w-2xl">
         <Card>
           <CardHeader>
-            <CardTitle>API Configuration</CardTitle>
+            <CardTitle>OpenAI Configuration</CardTitle>
             <CardDescription>
-              Manage your API keys for external services
+              Configure your OpenAI API key for qualitative analysis
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -64,10 +64,17 @@ export default function Settings() {
                   id="apiKey"
                   type="password"
                   placeholder="sk-..."
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
+                  onChange={(e) => {
+                    // Store value temporarily but don't set in state for security
+                    e.target.dataset.value = e.target.value;
+                  }}
                 />
-                <Button onClick={saveApiKey}>Save</Button>
+                <Button onClick={() => {
+                  const input = document.getElementById('apiKey') as HTMLInputElement;
+                  const key = input?.dataset.value || '';
+                  saveOpenAIKey(key);
+                  input.value = '';
+                }}>Save</Button>
               </div>
               <p className="text-sm text-muted-foreground">
                 Your API key is stored locally and not sent to our servers
@@ -102,7 +109,7 @@ export default function Settings() {
         
         <Card>
           <CardHeader>
-            <CardTitle>User Preferences</CardTitle>
+            <CardTitle>Analysis Preferences</CardTitle>
             <CardDescription>
               Configure your research workflow preferences
             </CardDescription>
@@ -126,6 +133,16 @@ export default function Settings() {
                 </p>
               </div>
               <Switch id="memoryEnabled" defaultChecked />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="visualizationEnabled">Data Visualization</Label>
+                <p className="text-sm text-muted-foreground">
+                  Create charts and graphs from analysis results
+                </p>
+              </div>
+              <Switch id="visualizationEnabled" defaultChecked />
             </div>
           </CardContent>
         </Card>
