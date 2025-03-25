@@ -29,19 +29,13 @@ QualAgents is a backend service for AI-powered qualitative data analysis, built 
 
 ### Installation
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/yourusername/qualagents.git
-   cd qualagents
-   ```
-
-2. Set up environment variables:
+1. Set up environment variables:
    ```
    cp .env.example .env
    ```
    Edit `.env` to add your OpenAI API key and customize other settings.
 
-3. Install dependencies:
+2. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
@@ -89,9 +83,7 @@ The API provides the following main endpoints:
 
 Detailed API documentation is available via the Swagger UI at `/docs`.
 
-## Development
-
-### Project Structure
+## Project Structure
 
 ```
 qualagents/
@@ -128,6 +120,8 @@ qualagents/
 └── README.md
 ```
 
-## License
+## Copyright
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+© 2023-2024 QualAgents. All rights reserved.
+
+QualAgents is proprietary software. Unauthorized copying, modification, distribution, or use of this software is strictly prohibited.
