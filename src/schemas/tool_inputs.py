@@ -1,4 +1,3 @@
-
 from typing import List, Literal, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
@@ -52,6 +51,10 @@ class GetRecentContextInput(BaseModel):
     analysis_id: Optional[int] = Field(None, description="Filter by analysis ID")
     limit: int = Field(5, description="Maximum number of memories to retrieve")
 
+class SummarizeMemoryInput(BaseModel):
+    """Input schema for summarize_memory tool"""
+    memories: List[Dict[str, Any]] = Field(..., description="List of memories to summarize, each containing text, tags, score, etc.")
+
 class SentimentOutput(BaseModel):
     """Output schema for sentiment_analysis tool"""
     sentiment: Literal["positive", "negative", "neutral"] = Field(..., description="The sentiment classification")
@@ -85,3 +88,8 @@ class StoreMemoryOutput(BaseModel):
     memory_id: Optional[int] = Field(None, description="ID of the stored memory")
     message: str = Field(..., description="Detailed message about the operation")
     error: Optional[str] = Field(None, description="Error message if storage failed")
+
+class SummarizeMemoryOutput(BaseModel):
+    """Output schema for summarize_memory tool"""
+    summary: str = Field(..., description="A concise summary synthesizing the most relevant ideas from the memories")
+    error: Optional[str] = Field(None, description="Error message if summarization failed")

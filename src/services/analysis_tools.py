@@ -12,7 +12,8 @@ from src.agents.tools import (
     retrieve_memories,
     store_memory,
     get_recent_context,
-    summarize_memories
+    summarize_memories,
+    summarize_memory
 )
 
 logger = logging.getLogger(__name__)
@@ -31,7 +32,8 @@ class AnalysisToolsService:
             "retrieve_memories": retrieve_memories,
             "store_memory": store_memory,
             "get_recent_context": get_recent_context,
-            "summarize_memories": summarize_memories
+            "summarize_memories": summarize_memories,
+            "summarize_memory": summarize_memory
         }
     
     async def execute_tool(self, tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:

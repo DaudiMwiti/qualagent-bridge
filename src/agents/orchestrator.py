@@ -1,4 +1,3 @@
-
 from typing import Dict, Any, List, Optional
 import asyncio
 from datetime import datetime
@@ -13,7 +12,8 @@ from src.agents.tools import (
     generate_insight,
     sentiment_analysis,
     theme_cluster,
-    llm_router
+    llm_router,
+    summarize_memory
 )
 
 logger = logging.getLogger(__name__)
@@ -39,7 +39,8 @@ class AnalysisOrchestrator:
             "generate_insight": generate_insight,
             "sentiment_analysis": sentiment_analysis,
             "theme_cluster": theme_cluster,
-            "llm_router": llm_router
+            "llm_router": llm_router,
+            "summarize_memory": summarize_memory
         }
         
         # Filter tools based on agent configuration
@@ -171,6 +172,7 @@ class AnalysisOrchestrator:
         - generate_insight: Extract structured insights from text
         - sentiment_analysis: Analyze emotional tone of text
         - theme_cluster: Cluster related concepts from statements
+        - summarize_memory: Summarize memory
         
         Explain your proposed analysis approach and which tool to use first.
         """
@@ -216,6 +218,8 @@ class AnalysisOrchestrator:
             return "theme_cluster"
         elif "router" in response_lower:
             return "llm_router"
+        elif "summarize_memory" in response_lower:
+            return "summarize_memory"
         
         # Default to generate_insight if no clear tool is mentioned
         return "generate_insight"
@@ -231,7 +235,8 @@ class AnalysisOrchestrator:
             "generate_insight": {"text": default_text, "approach": "thematic"},
             "sentiment_analysis": {"text": default_text},
             "theme_cluster": {"excerpts": default_text.split("\n\n")},
-            "llm_router": {"query": response_text.split("\n")[0]}
+            "llm_router": {"query": response_text.split("\n")[0]},
+            "summarize_memory": {"text": default_text}
         }
         
         return tool_params
@@ -263,7 +268,8 @@ class AnalysisOrchestrator:
                 "generate_insight": generate_insight,
                 "sentiment_analysis": sentiment_analysis,
                 "theme_cluster": theme_cluster,
-                "llm_router": llm_router
+                "llm_router": llm_router,
+                "summarize_memory": summarize_memory
             }
             
             tool_fn = tool_map.get(next_tool)
