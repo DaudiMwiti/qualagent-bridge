@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { 
   CartesianGrid, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, 
-  Tooltip, XAxis, YAxis, BarChart, Bar
+  Tooltip, XAxis, YAxis, BarChart, Bar, Cell
 } from "recharts";
 import { BarChart as BarChartIcon } from "lucide-react";
 
