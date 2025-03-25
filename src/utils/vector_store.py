@@ -1,4 +1,3 @@
-
 from typing import List, Dict, Any, Optional
 import numpy as np
 from sqlalchemy import Table, Column, Integer, String, Float, ForeignKey, MetaData, Text, Index, func, text
@@ -68,8 +67,6 @@ class VectorStore:
         ))
         
         await self.db.commit()
-    
-    # ... keep existing code (add_texts, add_memory methods) the same ...
     
     async def tag_memory(self, text: str) -> str:
         """
@@ -164,7 +161,9 @@ class VectorStore:
         query: str, 
         project_id: int, 
         k: int = 5,
-        table_name: str = "vectors"
+        table_name: str = "vectors",
+        offset: int = 0,
+        min_score: float = 0.0
     ) -> List[Dict[str, Any]]:
         """Search for similar vectors in the specified table"""
         # Generate query embedding
@@ -176,15 +175,20 @@ class VectorStore:
         # Build the SQL query using pgvector's cosine similarity
         # This uses the <=> operator which is the cosine distance operator
         q = f"""
-        SELECT 
-            id, 
-            text, 
-            metadata, 
-            1 - (embedding <=> :query_embedding::float[]) as similarity
-        FROM {table_name}
-        WHERE project_id = :project_id
-        ORDER BY embedding <=> :query_embedding::float[]
-        LIMIT :k
+        WITH similarity_results AS (
+            SELECT 
+                id, 
+                text, 
+                metadata, 
+                1 - (embedding <=> :query_embedding::float[]) as similarity
+            FROM {table_name}
+            WHERE project_id = :project_id
+                AND (1 - (embedding <=> :query_embedding::float[])) >= :min_score
+            ORDER BY embedding <=> :query_embedding::float[]
+            LIMIT :k
+            OFFSET :offset
+        )
+        SELECT * FROM similarity_results
         """
         
         try:
@@ -194,7 +198,9 @@ class VectorStore:
                 {
                     "query_embedding": query_embedding,
                     "project_id": project_id,
-                    "k": k
+                    "k": k,
+                    "offset": offset,
+                    "min_score": min_score
                 }
             )
             
@@ -219,12 +225,18 @@ class VectorStore:
             WHERE project_id = :project_id
                 AND to_tsvector('english', text) @@ plainto_tsquery('english', :query)
             LIMIT :k
+            OFFSET :offset
             """
             
             try:
                 fallback_result = await self.db.execute(
                     text(fallback_query),
-                    {"query": query, "project_id": project_id, "k": k}
+                    {
+                        "query": query, 
+                        "project_id": project_id, 
+                        "k": k,
+                        "offset": offset
+                    }
                 )
                 
                 documents = []
@@ -501,22 +513,26 @@ class VectorStore:
         RETURNING id
         """
         
-        result = await self.db.execute(
-            text(memory_insert),
-            {
-                "text": text,
-                "embedding": embedding,
-                "project_id": project_id,
-                "agent_id": agent_id,
-                "analysis_id": analysis_id,
-                "memory_type": memory_type,
-                "timestamp": timestamp,
-                "metadata": metadata or {},
-                "tag": tag
-            }
-        )
-        
-        memory_id = result.scalar_one()
-        await self.db.commit()
-        
-        return memory_id
+        try:
+            result = await self.db.execute(
+                text(memory_insert),
+                {
+                    "text": text,
+                    "embedding": embedding,
+                    "project_id": project_id,
+                    "agent_id": agent_id,
+                    "analysis_id": analysis_id,
+                    "memory_type": memory_type,
+                    "timestamp": timestamp,
+                    "metadata": metadata or {},
+                    "tag": tag
+                }
+            )
+            
+            memory_id = result.scalar_one()
+            await self.db.commit()
+            
+            return memory_id
+        except Exception as e:
+            await self.db.rollback()
+            raise e
