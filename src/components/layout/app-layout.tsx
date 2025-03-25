@@ -1,5 +1,5 @@
 
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import { SidebarNav } from "./sidebar-nav";
 
 export function AppLayout() {
@@ -7,14 +7,14 @@ export function AppLayout() {
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <div className="w-64 border-r px-4 py-6 hidden md:block">
-        <div className="flex items-center gap-2 px-2 mb-6">
+        <Link to="/" className="flex items-center gap-2 px-2 mb-6">
           <div className="rounded-md bg-primary p-1">
             <div className="h-6 w-6 text-primary-foreground flex items-center justify-center font-semibold">
               Q
             </div>
           </div>
           <h1 className="text-xl font-bold">QualAgents</h1>
-        </div>
+        </Link>
         <SidebarNav />
       </div>
       
