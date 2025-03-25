@@ -1,10 +1,11 @@
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Type
 import asyncio
 from datetime import datetime
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolExecutor, tools_to_execute_tools
 import logging
+from pydantic import BaseModel
 
 from src.core.config import settings
 from src.agents.tools import (
@@ -15,6 +16,17 @@ from src.agents.tools import (
     llm_router,
     summarize_memory
 )
+from src.services.param_extractor import param_extractor
+from src.schemas.tool_inputs import (
+    DocumentSearchInput,
+    GenerateInsightInput,
+    SentimentAnalysisInput,
+    ThemeClusterInput,
+    LLMRouterInput,
+    SummarizeMemoryInput
+)
+from src.services.cache import CacheService
+from src.db.base import async_session
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +43,15 @@ class AnalysisOrchestrator:
         )
         self.tools = self._setup_tools()
         self.workflow = self._build_workflow()
+        self._cache = None  # Lazy-initialized cache
+    
+    async def _get_cache(self) -> CacheService:
+        """Lazy initialization of cache service"""
+        if self._cache is None:
+            # Create a new session for the cache
+            session = async_session()
+            self._cache = CacheService(session)
+        return self._cache
     
     def _setup_tools(self) -> List[Any]:
         """Set up the tools available to the agent"""
@@ -159,8 +180,8 @@ class AnalysisOrchestrator:
         return text_data
     
     async def _analyze_data(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Core analysis using LLM and tools"""
-        logger.info("Running core analysis")
+        """Core analysis using LLM and tools with smart parameter extraction"""
+        logger.info("Running core analysis with smart parameter extraction")
         
         # Extract preprocessed data
         preprocessed_data = state["intermediate_results"]["preprocessed_data"]
@@ -183,6 +204,29 @@ class AnalysisOrchestrator:
         
         # Combine text data for analysis
         combined_text = "\n\n".join([item["text"] for item in text_data])
+        
+        # Generate cache key based on input and config
+        cache = await self._get_cache()
+        cache_key = cache.generate_key(
+            "analysis_plan",
+            text_hash=hash(combined_text[:1000]),
+            research_objective=parameters.get("research_objective", ""),
+            agent_config_hash=hash(str(self.agent_config))
+        )
+        
+        # Try to get cached result
+        if settings.ENABLE_CACHE:
+            cached_result = await cache.get(cache_key)
+            if cached_result:
+                logger.info("Using cached analysis plan")
+                return {
+                    **state,
+                    "intermediate_results": {
+                        **state["intermediate_results"],
+                        **cached_result,
+                        "cache_hit": True
+                    }
+                }
         
         # Create the prompt based on agent configuration
         system_prompt = self.agent_config.get("system_prompt", 
@@ -215,7 +259,6 @@ class AnalysisOrchestrator:
         - generate_insight: Extract structured insights from text
         - sentiment_analysis: Analyze emotional tone of text
         - theme_cluster: Cluster related concepts from statements
-        - summarize_memory: Summarize memory
         
         Explain your proposed analysis approach and which tool to use first.
         """
@@ -233,18 +276,87 @@ class AnalysisOrchestrator:
             "is_final": False  # This will be set to True in a later step
         })
         
-        # Determine which tool to use based on LLM response
-        tool_to_use = self._extract_tool_from_response(response.content)
+        # Determine which tool to use and extract parameters using the smart extractor
+        tool_to_use = None
+        tool_params = {}
         
-        return {
+        try:
+            # First, try to determine the tool using the response content
+            tool_to_use = self._extract_tool_from_response(response.content)
+            
+            # Get the appropriate schema for the selected tool
+            schema_class = self._get_schema_for_tool(tool_to_use)
+            
+            # Extract parameters using the smart extractor
+            params, extraction_method = await param_extractor.extract_with_fallback(
+                text=response.content,
+                schema=schema_class,
+                default_values=self._get_default_params(tool_to_use, combined_text)
+            )
+            
+            # Convert params to dict and add extraction metadata
+            tool_params = {
+                **params.model_dump(),
+                "_extraction_method": "llm" if extraction_method else "fallback"
+            }
+            
+            logger.info(f"Extracted parameters using {tool_params['_extraction_method']} method")
+            
+        except Exception as e:
+            # Fallback to basic extraction if smart extraction fails
+            logger.warning(f"Smart parameter extraction failed: {str(e)}")
+            tool_to_use = self._extract_tool_from_response(response.content)
+            tool_params = self._extract_tool_params(response.content, combined_text)
+        
+        # Prepare the result
+        result = {
             **state,
             "intermediate_results": {
                 **state["intermediate_results"],
                 "analysis_steps": analysis_steps,
                 "next_tool": tool_to_use,
-                "tool_params": self._extract_tool_params(response.content, combined_text)
+                "tool_params": tool_params
             }
         }
+        
+        # Cache the result if caching is enabled
+        if settings.ENABLE_CACHE:
+            # Cache only the relevant parts of the intermediate results
+            cache_data = {
+                "next_tool": tool_to_use,
+                "tool_params": tool_params,
+                "analysis_steps": analysis_steps
+            }
+            await cache.set(cache_key, cache_data)
+        
+        return result
+    
+    def _get_schema_for_tool(self, tool_name: str) -> Type[BaseModel]:
+        """Get the appropriate Pydantic schema for a tool"""
+        tool_schema_map = {
+            "document_search": DocumentSearchInput,
+            "generate_insight": GenerateInsightInput,
+            "sentiment_analysis": SentimentAnalysisInput,
+            "theme_cluster": ThemeClusterInput,
+            "llm_router": LLMRouterInput,
+            "summarize_memory": SummarizeMemoryInput
+        }
+        
+        return tool_schema_map.get(tool_name, GenerateInsightInput)
+    
+    def _get_default_params(self, tool_name: str, default_text: str) -> Dict[str, Any]:
+        """Get default parameters for a tool"""
+        # Default parameters by tool type
+        tool_params = {
+            "document_search": {"query": default_text.split("\n")[0][:100]},
+            "generate_insight": {"text": default_text[:5000], "approach": "thematic"},
+            "sentiment_analysis": {"text": default_text[:5000]},
+            "theme_cluster": {"excerpts": default_text.split("\n\n")[:10]},
+            "llm_router": {"query": default_text.split("\n")[0][:100]},
+            "summarize_memory": {"text": default_text[:5000]}
+        }
+        
+        return tool_params.get(tool_name, {})
     
     def _extract_tool_from_response(self, response_text: str) -> str:
         """Extract which tool to use from the LLM response"""
@@ -479,13 +591,21 @@ class AnalysisOrchestrator:
     
     async def run_analysis(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Run the full analysis workflow"""
-        logger.info("Starting analysis workflow")
+        logger.info("Starting analysis workflow with smart parameter extraction")
         
-        # Initialize the state
-        initial_state = {"input_data": data}
-        
-        # Run the workflow
-        result = await self.workflow.ainvoke(initial_state)
-        
-        # Return the final results
-        return result["final_results"]
+        try:
+            # Initialize the state
+            initial_state = {"input_data": data}
+            
+            # Run the workflow
+            result = await self.workflow.ainvoke(initial_state)
+            
+            # Return the final results
+            return result["final_results"]
+            
+        finally:
+            # Clean up resources
+            if self._cache is not None:
+                # We don't close the session here because it might be used by other code
+                # The session will be closed when the app shuts down
+                pass

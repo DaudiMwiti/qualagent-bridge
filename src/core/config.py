@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     SEARCH_MIN_SCORE: float = float(os.getenv("SEARCH_MIN_SCORE", "0.0"))
     SEARCH_CACHE_TTL: int = int(os.getenv("SEARCH_CACHE_TTL", "300"))  # 5 minutes in seconds
     
+    # Caching settings
+    ENABLE_CACHE: bool = os.getenv("ENABLE_CACHE", "1") == "1"
+    CACHE_CLEANUP_INTERVAL: int = int(os.getenv("CACHE_CLEANUP_INTERVAL", "3600"))  # 1 hour in seconds
+    
+    # Parameter extraction settings
+    PARAM_EXTRACTION_MAX_RETRIES: int = int(os.getenv("PARAM_EXTRACTION_MAX_RETRIES", "2"))
+    
     @property
     def DATABASE_URI(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

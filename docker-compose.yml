@@ -12,11 +12,27 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=qualagents
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DB_POOL_SIZE=10
+      - DB_MAX_OVERFLOW=20
+      - SEARCH_CACHE_TTL=3600  # 1 hour cache
+      - ENABLE_CACHE=1
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./:/app
-    command: uvicorn src.app:app --host 0.0.0.0 --port 8000 --reload
+    command: uvicorn src.app:app --host 0.0.0.0 --port 8000 --workers 4
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
 
   db:
     image: pgvector/pgvector:pg16
@@ -33,6 +49,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
 
 volumes:
   postgres_data:
