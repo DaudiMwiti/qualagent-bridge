@@ -18,7 +18,7 @@ export function initializeTheme() {
   
   // Apply stored theme - validate that it's one of our acceptable values
   if (storedTheme === "dark" || storedTheme === "light") {
-    setTheme(storedTheme);
+    setTheme(storedTheme as ThemeType);
   } else {
     // Fall back to light theme if value is invalid
     setTheme("light");
@@ -38,7 +38,7 @@ export function setTheme(theme: ThemeType) {
 }
 
 // Function to toggle the theme
-export function toggleTheme() {
+export function toggleTheme(): boolean {
   const isDark = document.documentElement.classList.contains("dark");
   setTheme(isDark ? "light" : "dark");
   return !isDark;

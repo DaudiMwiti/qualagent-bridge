@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/layout/app-layout";
+import { useEffect } from "react";
+import { initializeTheme } from "@/utils/theme";
 
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -20,37 +22,44 @@ import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Landing Page Route */}
-          <Route index element={<LandingPage />} />
-          
-          {/* App Routes */}
-          <Route path="/dashboard" element={<AppLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="projects" element={<Projects />} />
-            <Route path="projects/new" element={<NewProject />} />
-            <Route path="projects/:projectId" element={<ProjectDetail />} />
-            <Route path="projects/:projectId/analysis/new" element={<NewAnalysis />} />
-            <Route path="projects/:projectId/analysis/:analysisId" element={<AnalysisDetail />} />
-            <Route path="agents" element={<Agents />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-          
-          {/* OLD ROUTES - Keeping for compatibility */}
-          <Route path="/home" element={<Index />} />
-          
-          {/* CATCH-ALL ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Initialize theme when the app loads
+  useEffect(() => {
+    initializeTheme();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Landing Page Route */}
+            <Route index element={<LandingPage />} />
+            
+            {/* App Routes */}
+            <Route path="/dashboard" element={<AppLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="projects/new" element={<NewProject />} />
+              <Route path="projects/:projectId" element={<ProjectDetail />} />
+              <Route path="projects/:projectId/analysis/new" element={<NewAnalysis />} />
+              <Route path="projects/:projectId/analysis/:analysisId" element={<AnalysisDetail />} />
+              <Route path="agents" element={<Agents />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
+            
+            {/* OLD ROUTES - Keeping for compatibility */}
+            <Route path="/home" element={<Index />} />
+            
+            {/* CATCH-ALL ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

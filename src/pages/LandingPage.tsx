@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -14,25 +14,43 @@ import {
   Upload, 
   Bot, 
   Lightbulb,
-  Github
+  Github,
+  Moon,
+  Sun
 } from "lucide-react";
+import { toggleTheme } from "@/utils/theme";
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Initialize theme on component mount
   useEffect(() => {
     // Check and set preferred color scheme
-    if (localStorage.getItem("theme") === "dark" || 
-        (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    const isDark = document.documentElement.classList.contains("dark");
+    setIsDarkMode(isDark);
   }, []);
+
+  const handleThemeToggle = () => {
+    const newIsDark = toggleTheme();
+    setIsDarkMode(newIsDark);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Fixed Theme Toggle Button */}
+      <div className="fixed top-4 right-4 z-50">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleThemeToggle}
+          aria-label="Toggle theme"
+          className="rounded-full shadow-sm"
+        >
+          {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </Button>
+      </div>
+
       {/* Hero Section */}
       <header className="w-full py-16 md:py-24 px-4 bg-gradient-to-br from-background to-secondary/20">
         <div className="container mx-auto max-w-6xl">
@@ -209,24 +227,6 @@ export default function LandingPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Screenshot Placeholder */}
-      <section className="py-16 md:py-24 px-4 bg-background">
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              See QualAgents in Action
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our intuitive interface makes qualitative research analysis simple and powerful.
-            </p>
-          </div>
-          
-          <div className="bg-gradient-to-r from-primary/5 to-secondary/10 aspect-video rounded-xl border shadow-md flex items-center justify-center">
-            <p className="text-muted-foreground text-xl">UI Screenshot Placeholder</p>
           </div>
         </div>
       </section>
