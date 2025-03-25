@@ -18,6 +18,37 @@ QualAgents is a backend service for AI-powered qualitative data analysis, built 
 - PostgreSQL with pgvector
 - Async SQLAlchemy
 
+## Application Flow
+
+QualAgents follows a structured workflow for analyzing qualitative data:
+
+1. **Project Creation**
+   - Users create research projects to organize their qualitative data analysis
+   - Each project contains metadata about the research context, objectives, and settings
+
+2. **Agent Configuration**
+   - Specialized AI agents are configured for different analysis tasks
+   - Agents can be customized with different capabilities, parameters, and tool access
+
+3. **Data Processing**
+   - Raw qualitative data (interviews, focus groups, etc.) is submitted to the system
+   - The orchestrator routes data through appropriate agents based on analysis needs
+
+4. **Analysis Pipeline**
+   - Agents process data using specialized tools (sentiment analysis, theme clustering, etc.)
+   - Intermediary results are stored in agent memory for context-aware processing
+   - Vector embeddings enable semantic similarity search across analysis artifacts
+
+5. **Insight Generation**
+   - Processed data is synthesized into actionable insights
+   - The system generates summaries, themes, and recommendations
+   - Results are delivered through the API and can be visualized in the frontend
+
+6. **Feedback Loop**
+   - Researchers can provide feedback on analysis results
+   - The system learns from feedback to improve future analyses
+   - Agent memories persist across sessions for continuous improvement
+
 ## Getting Started
 
 ### Prerequisites
@@ -82,6 +113,35 @@ The API provides the following main endpoints:
 - `/api/v1/analysis` - Submit and retrieve analysis tasks
 
 Detailed API documentation is available via the Swagger UI at `/docs`.
+
+## System Architecture
+
+QualAgents architecture consists of several interconnected components:
+
+1. **API Layer**
+   - FastAPI endpoints for client interaction
+   - Request validation using Pydantic schemas
+   - Authentication and authorization middleware
+
+2. **Service Layer**
+   - Business logic for project, agent, and analysis management
+   - Orchestration of agent workflows and tool selection
+   - Data transformation and preparation
+
+3. **Agent System**
+   - LangGraph-powered agent orchestration
+   - Specialized tools for qualitative analysis tasks
+   - Agent memory management for contextual awareness
+
+4. **Database Layer**
+   - PostgreSQL for structured data storage
+   - pgvector extension for vector embeddings
+   - Async SQLAlchemy for database operations
+
+5. **Memory System**
+   - Vector storage for semantic similarity search
+   - Persistent memory across analysis sessions
+   - Memory summarization and retrieval mechanisms
 
 ## Project Structure
 
