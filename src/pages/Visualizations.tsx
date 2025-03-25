@@ -4,96 +4,75 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, PieChart, PieArcSeries, Cell, Legend, Pie, Tooltip, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import { 
+  CartesianGrid, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, 
+  Tooltip, XAxis, YAxis, BarChart, Bar
+} from "recharts";
+import { BarChart as BarChartIcon } from "lucide-react";
 
-// Sample data for visualizations
+// Sample data for visualization
 const themeData = [
-  { name: "User Experience", value: 42, fill: "#8884d8" },
-  { name: "Performance", value: 28, fill: "#83a6ed" },
-  { name: "Features", value: 15, fill: "#8dd1e1" },
-  { name: "Pricing", value: 9, fill: "#82ca9d" },
-  { name: "Support", value: 6, fill: "#a4de6c" }
+  { name: "Communication", value: 35 },
+  { name: "User Experience", value: 28 },
+  { name: "Functionality", value: 22 },
+  { name: "Performance", value: 15 },
+  { name: "Other", value: 10 },
 ];
 
 const sentimentData = [
-  { name: "Positive", value: 65, fill: "#82ca9d" },
-  { name: "Neutral", value: 25, fill: "#83a6ed" },
-  { name: "Negative", value: 10, fill: "#ff8042" }
+  { name: "Jan", positive: 30, negative: 10, neutral: 15 },
+  { name: "Feb", positive: 25, negative: 12, neutral: 18 },
+  { name: "Mar", positive: 35, negative: 8, neutral: 12 },
+  { name: "Apr", positive: 40, negative: 5, neutral: 10 },
+  { name: "May", positive: 32, negative: 15, neutral: 8 },
+  { name: "Jun", positive: 38, negative: 10, neutral: 7 },
 ];
 
-const timeSeriesData = [
-  { date: "Jan", positive: 30, negative: 10, neutral: 15 },
-  { date: "Feb", positive: 25, negative: 12, neutral: 18 },
-  { date: "Mar", positive: 35, negative: 8, neutral: 12 },
-  { date: "Apr", positive: 40, negative: 5, neutral: 10 },
-  { date: "May", positive: 45, negative: 4, neutral: 8 },
-  { date: "Jun", positive: 50, negative: 6, neutral: 10 }
+const insightTrendData = [
+  { month: "Jan", insights: 5 },
+  { month: "Feb", insights: 8 },
+  { month: "Mar", insights: 12 },
+  { month: "Apr", insights: 15 },
+  { month: "May", insights: 18 },
+  { month: "Jun", insights: 20 },
 ];
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9370DB'];
 
 export default function Visualizations() {
   const [projectId, setProjectId] = useState<string>("");
   const [analysisId, setAnalysisId] = useState<string>("");
   
-  const chartConfig = {
-    positive: {
-      label: "Positive",
-      theme: {
-        light: "#82ca9d",
-        dark: "#82ca9d"
-      }
-    },
-    negative: {
-      label: "Negative",
-      theme: {
-        light: "#ff8042",
-        dark: "#ff8042"
-      }
-    },
-    neutral: {
-      label: "Neutral",
-      theme: {
-        light: "#83a6ed",
-        dark: "#83a6ed"
-      }
-    }
-  };
-  
   return (
     <div>
       <PageHeader 
         title="Visualizations" 
-        description="Interactive visualizations of your analysis results"
+        description="Interactive visualizations of your research data"
       />
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <Label htmlFor="projectSelect">Project</Label>
-              <Select onValueChange={setProjectId}>
-                <SelectTrigger id="projectSelect">
-                  <SelectValue placeholder="Select project" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Interview Study 2023</SelectItem>
-                  <SelectItem value="2">Customer Feedback Analysis</SelectItem>
-                  <SelectItem value="3">Research Survey Responses</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="pt-6">
+      <div className="mb-6 space-y-4 max-w-4xl">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="projectSelect">Project</Label>
+            <Select onValueChange={setProjectId}>
+              <SelectTrigger id="projectSelect">
+                <SelectValue placeholder="Select project" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Interview Study 2023</SelectItem>
+                <SelectItem value="2">Customer Feedback Analysis</SelectItem>
+                <SelectItem value="3">Research Survey Responses</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {projectId && (
             <div className="space-y-2">
               <Label htmlFor="analysisSelect">Analysis</Label>
-              <Select onValueChange={setAnalysisId} disabled={!projectId}>
+              <Select onValueChange={setAnalysisId}>
                 <SelectTrigger id="analysisSelect">
-                  <SelectValue placeholder={projectId ? "Select analysis" : "Select a project first"} />
+                  <SelectValue placeholder="Select analysis" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1">Thematic Analysis #1</SelectItem>
@@ -102,117 +81,46 @@ export default function Visualizations() {
                 </SelectContent>
               </Select>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       </div>
       
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
+      <Tabs defaultValue="themes" className="max-w-4xl">
+        <TabsList className="mb-6">
           <TabsTrigger value="themes">Themes</TabsTrigger>
-          <TabsTrigger value="sentiment">Sentiment</TabsTrigger>
-          <TabsTrigger value="timeseries">Time Series</TabsTrigger>
+          <TabsTrigger value="sentiment">Sentiment Analysis</TabsTrigger>
+          <TabsTrigger value="insights">Insights Over Time</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Theme Distribution</CardTitle>
-                <CardDescription>
-                  Key themes identified in your analysis
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={themeData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {themeData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Sentiment Analysis</CardTitle>
-                <CardDescription>
-                  Overall sentiment distribution in your data
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={sentimentData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {sentimentData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
         
         <TabsContent value="themes">
           <Card>
             <CardHeader>
-              <CardTitle>Theme Analysis</CardTitle>
+              <CardTitle>Theme Distribution</CardTitle>
               <CardDescription>
-                Detailed breakdown of themes identified in your data
+                Visualization of key themes identified in your qualitative data
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
                     data={themeData}
-                    margin={{
-                      top: 5,
-                      right: 30,
-                      left: 20,
-                      bottom: 5,
-                    }}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    outerRadius={130}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="value" name="Frequency" fill="#8884d8" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+                    {themeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>
@@ -220,74 +128,47 @@ export default function Visualizations() {
         <TabsContent value="sentiment">
           <Card>
             <CardHeader>
-              <CardTitle>Sentiment Analysis</CardTitle>
+              <CardTitle>Sentiment Analysis Over Time</CardTitle>
               <CardDescription>
-                Detailed sentiment breakdown of your qualitative data
+                Tracking positive, negative, and neutral sentiment
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={sentimentData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={120}
-                      fill="#8884d8"
-                      paddingAngle={5}
-                      dataKey="value"
-                      label={({ name, value }) => `${name}: ${value}`}
-                    >
-                      {sentimentData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={sentimentData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line type="monotone" dataKey="positive" stroke="#00C49F" activeDot={{ r: 8 }} />
+                  <Line type="monotone" dataKey="negative" stroke="#FF8042" />
+                  <Line type="monotone" dataKey="neutral" stroke="#0088FE" />
+                </LineChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>
         
-        <TabsContent value="timeseries">
+        <TabsContent value="insights">
           <Card>
             <CardHeader>
-              <CardTitle>Sentiment Over Time</CardTitle>
+              <CardTitle>Insights Generated Over Time</CardTitle>
               <CardDescription>
-                How sentiment has changed throughout your data collection
+                Tracking the accumulation of research insights
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-96">
-                <ChartContainer config={chartConfig}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={timeSeriesData}
-                      margin={{
-                        top: 5,
-                        right: 30,
-                        left: 20,
-                        bottom: 5,
-                      }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <ChartTooltip 
-                        content={<ChartTooltipContent />}
-                      />
-                      <Legend />
-                      <Bar dataKey="positive" name="Positive" fill="#82ca9d" />
-                      <Bar dataKey="neutral" name="Neutral" fill="#83a6ed" />
-                      <Bar dataKey="negative" name="Negative" fill="#ff8042" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </div>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={insightTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="insights" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>

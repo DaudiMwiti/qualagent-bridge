@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { download, upload } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 
 export default function DataManagement() {
   const { toast } = useToast();
@@ -122,7 +122,7 @@ export default function DataManagement() {
               
               <div className="rounded-lg border border-dashed p-6 text-center">
                 <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center">
-                  <upload className="h-10 w-10 text-muted-foreground mb-4" />
+                  <Upload className="h-10 w-10 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-1">Drag & drop files</h3>
                   <p className="mb-4 text-sm text-muted-foreground text-center">
                     Drag and drop files here or click to browse your computer
@@ -215,7 +215,7 @@ export default function DataManagement() {
                 onClick={handleExport}
                 disabled={!exportType || !projectId || (exportType !== "project" && !analysisId)}
               >
-                <download className="mr-2 h-4 w-4" />
+                <Download className="mr-2 h-4 w-4" />
                 Export Data
               </Button>
             </CardFooter>

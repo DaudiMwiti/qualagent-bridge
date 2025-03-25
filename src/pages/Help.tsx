@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import {
@@ -52,7 +51,6 @@ export default function Help() {
       <PageHeader 
         title="Help & Documentation" 
         description="Learn how to use QualAgents for qualitative research"
-        icon={HelpCircle}
       />
       
       <div className="mb-8">

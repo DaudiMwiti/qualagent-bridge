@@ -1,7 +1,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { BarChart, FileText, Home, Settings, UserCircle, HelpCircle, download } from "lucide-react";
+import { BarChart, FileText, Home, Settings, UserCircle, HelpCircle, Download } from "lucide-react";
 
 const navItems = [
   {
@@ -27,7 +27,7 @@ const navItems = [
   {
     title: "Data Management",
     href: "/dashboard/data",
-    icon: download,
+    icon: Download,
   },
   {
     title: "Help",
