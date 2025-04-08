@@ -29,14 +29,38 @@ export interface Memory {
   metadata?: Record<string, any>;
 }
 
+export interface QuoteSource {
+  document_id?: string;
+  chunk_id?: number;
+  start_char?: number;
+  end_char?: number;
+  metadata?: {
+    filename?: string;
+    paragraph?: number;
+    [key: string]: any;
+  };
+}
+
+export interface Quote {
+  text: string;
+  source?: QuoteSource;
+}
+
+export interface Theme {
+  name: string;
+  description: string;
+  keywords?: string[];
+  quotes?: (string | Quote)[];
+}
+
 export interface AnalysisResults {
-  themes?: Array<{
-    name: string;
-    description: string;
-    keywords: string[];
-    quotes: string[];
+  themes?: Theme[];
+  insights?: Array<string | {
+    theme: string;
+    quote?: string;
+    summary?: string;
+    source?: QuoteSource;
   }>;
-  insights?: string[];
   summary?: string;
   sentiment?: {
     overall: string;

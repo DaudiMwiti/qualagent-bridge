@@ -49,9 +49,26 @@ class MemoryItem(BaseModel):
     timestamp: Optional[float] = Field(None, example=1679504400)
     metadata: Optional[Dict[str, Any]] = None
 
+class QuoteSource(BaseModel):
+    document_id: Optional[str] = Field(None, example="interview-1")
+    chunk_id: Optional[int] = Field(None, example=3)
+    start_char: Optional[int] = Field(None, example=145)
+    end_char: Optional[int] = Field(None, example=267)
+    metadata: Optional[Dict[str, Any]] = Field(None, example={"filename": "interview1.txt", "paragraph": 4})
+
+class Quote(BaseModel):
+    text: str = Field(..., example="I found the sign-up process frustrating and unclear.")
+    source: Optional[QuoteSource] = None
+
+class Theme(BaseModel):
+    name: str = Field(..., example="User Frustration")
+    description: str = Field(..., example="Users expressing negative emotions about product experience")
+    keywords: Optional[List[str]] = Field(None, example=["frustrated", "confused", "difficult"])
+    quotes: Optional[List[Quote]] = None
+
 class AnalysisResults(BaseModel):
     summary: Optional[str] = None
-    themes: Optional[List[Dict[str, Any]]] = None
-    insights: Optional[List[str]] = None
+    themes: Optional[List[Theme]] = None
+    insights: Optional[List[Dict[str, Any]]] = None
     sentiment: Optional[Dict[str, Any]] = None
     memory_used: Optional[List[MemoryItem]] = None

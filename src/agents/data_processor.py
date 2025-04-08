@@ -4,7 +4,7 @@ from typing import Dict, Any, List, Callable
 import logging
 from datetime import datetime
 
-from src.agents.tool_manager import extract_tool_from_response, extract_tool_params
+from src.agents.tool_manager import extract_tool_from_response, extract_tool_params, get_default_params
 from src.agents.tools.summarize_memory import summarize_memory
 
 logger = logging.getLogger(__name__)
@@ -17,11 +17,24 @@ def extract_text_data(input_data: Dict[str, Any]) -> List[Dict[str, Any]]:
     if "interviews" in input_data:
         text_data.extend(input_data["interviews"])
     elif "texts" in input_data:
-        text_data.extend([{"text": t, "metadata": {}} for t in input_data["texts"]])
+        text_data.extend([{"text": t, "metadata": {"document_id": f"text-{i}", "filename": f"text-{i}"}} 
+                          for i, t in enumerate(input_data["texts"])])
     elif "documents" in input_data:
         text_data.extend(input_data["documents"])
     elif "text" in input_data:
-        text_data.append({"text": input_data["text"], "metadata": {}})
+        text_data.append({
+            "text": input_data["text"], 
+            "metadata": input_data.get("metadata", {"document_id": "main-text", "filename": "main-text"})
+        })
+    
+    # Ensure each text item has metadata with document_id and filename
+    for i, item in enumerate(text_data):
+        if "metadata" not in item:
+            item["metadata"] = {}
+        if "document_id" not in item["metadata"]:
+            item["metadata"]["document_id"] = f"doc-{i}"
+        if "filename" not in item["metadata"]:
+            item["metadata"]["filename"] = f"document-{i}"
     
     return text_data
 
@@ -119,28 +132,68 @@ def extract_themes_from_results(tool_results: List[Dict[str, Any]]) -> List[Dict
         if tool == "generate_insight" and "insights" in result_data:
             for insight in result_data["insights"]:
                 if "theme" in insight:
-                    themes.append({
+                    # Create proper theme with quote objects including source
+                    theme = {
                         "name": insight.get("theme"),
                         "description": insight.get("summary", ""),
-                        "quotes": [insight.get("quote", "")]
-                    })
+                        "keywords": [],
+                        "quotes": []
+                    }
+                    
+                    # Add quote with source information
+                    if "quote" in insight:
+                        quote = {
+                            "text": insight.get("quote", ""),
+                            "source": insight.get("source", {})
+                        }
+                        theme["quotes"] = [quote]
+                    
+                    themes.append(theme)
+                    
         elif tool == "theme_cluster" and "clusters" in result_data:
             for cluster in result_data["clusters"]:
                 if "theme" in cluster:
-                    themes.append({
+                    theme = {
                         "name": cluster.get("theme"),
                         "description": cluster.get("description", ""),
-                        "quotes": cluster.get("excerpts", [])
-                    })
+                        "keywords": cluster.get("keywords", []),
+                        "quotes": []
+                    }
+                    
+                    # Add quotes with source information if available
+                    if "excerpts" in cluster:
+                        for excerpt in cluster["excerpts"]:
+                            if isinstance(excerpt, dict) and "text" in excerpt:
+                                # Modern format with source info
+                                theme["quotes"].append(excerpt)
+                            else:
+                                # Legacy format without source info
+                                theme["quotes"].append({
+                                    "text": excerpt,
+                                    "source": None
+                                })
+                    
+                    themes.append(theme)
     
-    # Remove duplicates based on theme name
-    unique_themes = {}
+    # Consolidate duplicate themes
+    theme_map = {}
     for theme in themes:
         name = theme.get("name")
-        if name and name not in unique_themes:
-            unique_themes[name] = theme
+        if name not in theme_map:
+            theme_map[name] = theme
+        else:
+            # Merge quotes from duplicate themes
+            existing_theme = theme_map[name]
+            if "quotes" in theme and theme["quotes"]:
+                existing_theme["quotes"].extend(theme["quotes"])
+            
+            # Merge keywords if available
+            if "keywords" in theme and theme["keywords"]:
+                existing_keywords = set(existing_theme.get("keywords", []))
+                existing_keywords.update(theme["keywords"])
+                existing_theme["keywords"] = list(existing_keywords)
     
-    return list(unique_themes.values())
+    return list(theme_map.values())
 
 async def postprocess_results(state: Dict[str, Any], llm) -> Dict[str, Any]:
     """Postprocess the results into a structured format"""

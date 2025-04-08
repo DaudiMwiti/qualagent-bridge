@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AnalysisStream } from "@/components/analysis/analysis-stream";
-import { Download, ClipboardList, FileText, BarChart, Brain, Tag, Copy, Archive } from "lucide-react";
+import { Download, ClipboardList, FileText, BarChart, Brain, Tag, Copy, Archive, Link as LinkIcon } from "lucide-react";
 import { useProject } from "@/api/projects";
 import { useAnalysis, useAnalysisResults, AnalysisResults } from "@/api/analysis";
 import { useToast } from "@/hooks/use-toast";
@@ -247,7 +247,17 @@ export default function AnalysisDetail() {
                                 key={i}
                                 className="bg-muted p-3 rounded-md text-sm border-l-4 border-primary"
                               >
-                                "{quote}"
+                                <p>"{typeof quote === 'string' ? quote : quote.text}"</p>
+                                
+                                {typeof quote !== 'string' && quote.source && (
+                                  <div className="mt-2 flex items-center text-xs text-muted-foreground pt-2 border-t border-muted">
+                                    <LinkIcon className="h-3 w-3 mr-1" />
+                                    <p>
+                                      Source: {quote.source.metadata?.filename || quote.source.document_id || 'Unknown'} 
+                                      {quote.source.chunk_id !== undefined && ` (chunk ${quote.source.chunk_id})`}
+                                    </p>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -281,11 +291,34 @@ export default function AnalysisDetail() {
                           variant="ghost" 
                           size="icon" 
                           className="absolute top-2 right-2"
-                          onClick={() => copyToClipboard(insight)}
+                          onClick={() => copyToClipboard(typeof insight === 'string' ? insight : JSON.stringify(insight))}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
-                        <p className="pr-8">{insight}</p>
+                        
+                        {typeof insight === 'string' ? (
+                          <p className="pr-8">{insight}</p>
+                        ) : (
+                          <div className="pr-8">
+                            <h4 className="font-medium mb-2">{insight.theme}</h4>
+                            {insight.quote && (
+                              <blockquote className="pl-4 border-l-2 border-primary/50 italic mb-2">
+                                "{insight.quote}"
+                              </blockquote>
+                            )}
+                            <p>{insight.summary}</p>
+                            
+                            {insight.source && (
+                              <div className="mt-2 flex items-center text-xs text-muted-foreground pt-2 border-t border-muted">
+                                <LinkIcon className="h-3 w-3 mr-1" />
+                                <p>
+                                  Source: {insight.source.metadata?.filename || insight.source.document_id || 'Unknown'} 
+                                  {insight.source.chunk_id !== undefined && ` (chunk ${insight.source.chunk_id})`}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -300,7 +333,7 @@ export default function AnalysisDetail() {
             </Card>
           </TabsContent>
           
-          {/* New Tab for Context Used */}
+          {/* Context Used Tab */}
           <TabsContent value="memory">
             <Card>
               <CardHeader>
