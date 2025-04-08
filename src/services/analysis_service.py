@@ -64,6 +64,10 @@ class AnalysisService:
             
             results = await orchestrator.run_analysis(data)
             
+            # Add the retrieved memories to the results for transparency
+            if recent_context:
+                results["memory_used"] = recent_context
+            
             # Store important insights as memories
             try:
                 if "themes" in results and results["themes"]:

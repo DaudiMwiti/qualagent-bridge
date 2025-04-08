@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AnalysisStream } from "@/components/analysis/analysis-stream";
-import { Download, ClipboardList, FileText, BarChart, Brain, Tag, Copy } from "lucide-react";
+import { Download, ClipboardList, FileText, BarChart, Brain, Tag, Copy, Archive } from "lucide-react";
 import { useProject } from "@/api/projects";
 import { useAnalysis, useAnalysisResults, AnalysisResults } from "@/api/analysis";
 import { useToast } from "@/hooks/use-toast";
@@ -144,6 +144,12 @@ export default function AnalysisDetail() {
               <Brain className="h-4 w-4 mr-2" />
               Insights
             </TabsTrigger>
+            {results.memory_used && results.memory_used.length > 0 && (
+              <TabsTrigger value="memory">
+                <Archive className="h-4 w-4 mr-2" />
+                Context Used
+              </TabsTrigger>
+            )}
             {results.sentiment && (
               <TabsTrigger value="sentiment">
                 <BarChart className="h-4 w-4 mr-2" />
@@ -287,6 +293,68 @@ export default function AnalysisDetail() {
                   <div className="text-center p-6">
                     <p className="text-muted-foreground">
                       No specific insights were generated from this analysis.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* New Tab for Context Used */}
+          <TabsContent value="memory">
+            <Card>
+              <CardHeader>
+                <CardTitle>Context Used</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  These memories from previous analyses were used to inform this analysis.
+                </p>
+              </CardHeader>
+              <CardContent>
+                {results.memory_used?.length ? (
+                  <div className="space-y-4">
+                    {results.memory_used.map((memory, index) => (
+                      <Card key={index} className="border border-muted">
+                        <CardContent className="pt-6 space-y-2">
+                          <div className="flex justify-between mb-2">
+                            <span className="inline-block px-2 py-1 text-xs rounded bg-primary/10 text-primary">
+                              {memory.memory_type}
+                            </span>
+                            {memory.timestamp && (
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(memory.timestamp * 1000).toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                          {memory.tag && (
+                            <p className="text-xs font-medium">Tag: {memory.tag}</p>
+                          )}
+                          <blockquote className="text-sm border-l-4 border-primary pl-4 py-1 italic">
+                            {memory.text}
+                          </blockquote>
+                          {memory.score !== undefined && (
+                            <div className="mt-2">
+                              <p className="text-xs text-muted-foreground">
+                                Relevance Score: 
+                                <span className="font-medium ml-1">
+                                  {(memory.score * 100).toFixed(1)}%
+                                </span>
+                              </p>
+                              <div className="w-full h-1.5 bg-muted rounded-full mt-1">
+                                <div 
+                                  className="h-full bg-primary rounded-full" 
+                                  style={{ width: `${memory.score * 100}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-6">
+                    <p className="text-muted-foreground">
+                      No prior memories were used as context for this analysis.
                     </p>
                   </div>
                 )}

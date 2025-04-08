@@ -19,6 +19,16 @@ export interface AnalysisCreate {
   data: Record<string, any>;
 }
 
+export interface Memory {
+  id: string;
+  text: string;
+  memory_type: string;
+  tag?: string;
+  score?: number;
+  timestamp?: number;
+  metadata?: Record<string, any>;
+}
+
 export interface AnalysisResults {
   themes?: Array<{
     name: string;
@@ -33,6 +43,7 @@ export interface AnalysisResults {
     score: number;
     breakdown?: Record<string, any>;
   };
+  memory_used?: Memory[];
   [key: string]: any;
 }
 

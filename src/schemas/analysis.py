@@ -39,3 +39,19 @@ class AnalysisResponse(AnalysisBase):
 
     class Config:
         from_attributes = True
+
+class MemoryItem(BaseModel):
+    id: str = Field(..., example="mem-123")
+    text: str = Field(..., example="Users expressed frustration with the signup process.")
+    memory_type: str = Field(..., example="long_term")
+    tag: Optional[str] = Field(None, example="user_feedback")
+    score: Optional[float] = Field(None, example=0.92)
+    timestamp: Optional[float] = Field(None, example=1679504400)
+    metadata: Optional[Dict[str, Any]] = None
+
+class AnalysisResults(BaseModel):
+    summary: Optional[str] = None
+    themes: Optional[List[Dict[str, Any]]] = None
+    insights: Optional[List[str]] = None
+    sentiment: Optional[Dict[str, Any]] = None
+    memory_used: Optional[List[MemoryItem]] = None
